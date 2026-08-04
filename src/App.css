@@ -1,0 +1,133 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+  background: #f4f5f7;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: #1a1a1a;
+}
+
+.app {
+  width: 100%;
+  max-width: 480px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.contador {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0;
+}
+
+.form-tarea {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.form-tarea input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.form-tarea button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #2f5496;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.form-tarea button:hover {
+  background: #24406f;
+}
+
+.filtros {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filtro {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 999px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.filtro.activo {
+  background: #2f5496;
+  color: white;
+  border-color: #2f5496;
+}
+
+.lista-tareas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tarea {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.tarea span {
+  flex: 1;
+}
+
+.tarea.completada span {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.tarea button.eliminar {
+  border: none;
+  background: transparent;
+  color: #a33a3a;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.mensaje-vacio {
+  text-align: center;
+  color: #888;
+  margin-top: 24px;
+  display: none;
+}
