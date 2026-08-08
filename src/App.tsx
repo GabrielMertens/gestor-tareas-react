@@ -1,3 +1,4 @@
+import "./App.css";
 import { useState, useEffect } from "react";
 
 interface Tarea {
@@ -8,20 +9,47 @@ interface Tarea {
 
 type Filtro = "todas" | "pendientes" | "completadas";
 
+interface BotonModoOscuroProps {
+  modoOscuro: boolean;
+  onToggle: () => void;
+}
+
+function BotonModoOscuro({ modoOscuro, onToggle }: BotonModoOscuroProps) {
+  return (
+    <button className="boton-modo" onClick={onToggle}>
+      {modoOscuro ? "☀️ Modo claro" : "🌙 Modo oscuro"}
+    </button>
+  );
+}
+
 function cargarTareasIniciales(): Tarea[] {
   const guardado = localStorage.getItem("tareas");
   return guardado ? (JSON.parse(guardado) as Tarea[]) : [];
+}
+
+function cargarModoOscuroInicial(): boolean {
+  return localStorage.getItem("modoOscuro") === "true";
 }
 
 function App() {
   const [tareas, setTareas] = useState<Tarea[]>(cargarTareasIniciales);
   const [textoInput, setTextoInput] = useState("");
   const [filtro, setFiltro] = useState<Filtro>("todas");
+  const [modoOscuro, setModoOscuro] = useState<boolean>(cargarModoOscuroInicial);
 
-  // Sincroniza con localStorage cada vez que "tareas" cambia
   useEffect(() => {
     localStorage.setItem("tareas", JSON.stringify(tareas));
   }, [tareas]);
+
+  // Sincroniza la clase "oscuro" en <body> y guarda la preferencia
+  useEffect(() => {
+    document.body.classList.toggle("oscuro", modoOscuro);
+    localStorage.setItem("modoOscuro", String(modoOscuro));
+  }, [modoOscuro]);
+
+  function toggleModoOscuro() {
+    setModoOscuro(!modoOscuro);
+  }
 
   function agregarTarea(event: React.FormEvent) {
     event.preventDefault();
@@ -36,7 +64,7 @@ function App() {
     };
 
     setTareas([...tareas, nuevaTarea]);
-    setTextoInput(""); // limpia el input controlado
+    setTextoInput("");
   }
 
   function toggleTarea(id: string) {
@@ -62,8 +90,11 @@ function App() {
   return (
     <div className="app">
       <header>
-        <h1>Gestor de Tareas</h1>
-        <p className="contador">{pendientes} pendientes</p>
+        <div>
+          <h1>Gestor de Tareas</h1>
+          <p className="contador">{pendientes} pendientes</p>
+        </div>
+        <BotonModoOscuro modoOscuro={modoOscuro} onToggle={toggleModoOscuro} />
       </header>
 
       <form className="form-tarea" onSubmit={agregarTarea}>

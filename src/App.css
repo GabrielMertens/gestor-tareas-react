@@ -23,7 +23,7 @@ body {
 header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
   margin-bottom: 20px;
 }
 
@@ -130,4 +130,66 @@ h1 {
   color: #888;
   margin-top: 24px;
   display: none;
+}
+
+/* ---------- Modo oscuro ---------- */
+
+.boton-modo {
+  padding: 8px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+body.oscuro {
+  background: #16171a;
+  color: #e8e8e8;
+}
+
+body.oscuro .app h1 {
+  color: #f0f0f0;
+}
+
+body.oscuro .contador {
+  color: #a0a0a0;
+}
+
+body.oscuro .form-tarea input {
+  background: #24262b;
+  border-color: #3a3d44;
+  color: #e8e8e8;
+}
+
+body.oscuro .boton-modo {
+  background: #24262b;
+  border-color: #3a3d44;
+  color: #e8e8e8;
+}
+
+body.oscuro .filtro {
+  background: #24262b;
+  border-color: #3a3d44;
+  color: #cfcfcf;
+}
+
+body.oscuro .filtro.activo {
+  background: #4a72b8;
+  border-color: #4a72b8;
+  color: white;
+}
+
+body.oscuro .tarea {
+  background: #24262b;
+  box-shadow: none;
+  border: 1px solid #3a3d44;
+}
+
+body.oscuro .tarea.completada span {
+  color: #777;
+}
+
+body.oscuro .mensaje-vacio {
+  color: #888;
 }
