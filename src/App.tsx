@@ -1,5 +1,6 @@
 import "./App.css";
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 interface Tarea {
   id: string;
@@ -96,7 +97,7 @@ function App() {
         </div>
         <BotonModoOscuro modoOscuro={modoOscuro} onToggle={toggleModoOscuro} />
         <Link to="/estadisticas">📊 Ver estadísticas</Link>
-z     </header>
+      </header>
 
       <form className="form-tarea" onSubmit={agregarTarea}>
         <input
