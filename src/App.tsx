@@ -95,7 +95,8 @@ function App() {
           <p className="contador">{pendientes} pendientes</p>
         </div>
         <BotonModoOscuro modoOscuro={modoOscuro} onToggle={toggleModoOscuro} />
-      </header>
+        <Link to="/estadisticas">📊 Ver estadísticas</Link>
+z     </header>
 
       <form className="form-tarea" onSubmit={agregarTarea}>
         <input
