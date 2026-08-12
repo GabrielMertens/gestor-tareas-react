@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "./supabaseClient";
 
 interface Tarea {
   id: string;
@@ -25,11 +26,6 @@ function BotonModoOscuro({ modoOscuro, onToggle }: BotonModoOscuroProps) {
   );
 }
 
-function cargarTareasIniciales(): Tarea[] {
-  const guardado = localStorage.getItem("tareas");
-  return guardado ? (JSON.parse(guardado) as Tarea[]) : [];
-}
-
 function cargarModoOscuroInicial(): boolean {
   return localStorage.getItem("modoOscuro") === "true";
 }
@@ -41,15 +37,34 @@ const FILTROS: { valor: Filtro; etiqueta: string }[] = [
 ];
 
 function App() {
-  const [tareas, setTareas] = useState<Tarea[]>(cargarTareasIniciales);
+  const [tareas, setTareas] = useState<Tarea[]>([]);
+  const [cargando, setCargando] = useState(true);
   const [textoInput, setTextoInput] = useState("");
   const [filtro, setFiltro] = useState<Filtro>("todas");
   const [modoOscuro, setModoOscuro] = useState<boolean>(cargarModoOscuroInicial);
 
+  // Carga inicial de tareas desde Supabase (una sola vez, al montar)
   useEffect(() => {
-    localStorage.setItem("tareas", JSON.stringify(tareas));
-  }, [tareas]);
+    async function cargarTareas() {
+      const { data, error } = await supabase
+        .from("tareas")
+        .select()
+        .order("created_at", { ascending: true });
 
+      if (error) {
+        console.error("Error al cargar tareas:", error);
+        setCargando(false);
+        return;
+      }
+
+      setTareas(data ?? []);
+      setCargando(false);
+    }
+
+    cargarTareas();
+  }, []);
+
+  // El modo oscuro sigue siendo una preferencia local, no de base de datos
   useEffect(() => {
     document.body.classList.toggle("oscuro", modoOscuro);
     localStorage.setItem("modoOscuro", String(modoOscuro));
@@ -59,32 +74,55 @@ function App() {
     setModoOscuro(!modoOscuro);
   }
 
-  function agregarTarea(event: React.FormEvent) {
+  async function agregarTarea(event: React.FormEvent) {
     event.preventDefault();
 
     const texto = textoInput.trim();
     if (!texto) return;
 
-    const nuevaTarea: Tarea = {
-      id: crypto.randomUUID(),
-      texto,
-      completada: false,
-    };
+    const { data, error } = await supabase
+      .from("tareas")
+      .insert({ texto, completada: false })
+      .select()
+      .single();
 
-    setTareas([...tareas, nuevaTarea]);
+    if (error) {
+      console.error("Error al agregar tarea:", error);
+      return;
+    }
+
+    setTareas([...tareas, data]);
     setTextoInput("");
   }
 
-  function toggleTarea(id: string) {
+  async function toggleTarea(id: string) {
+    const tarea = tareas.find((t) => t.id === id);
+    if (!tarea) return;
+
+    const { error } = await supabase
+      .from("tareas")
+      .update({ completada: !tarea.completada })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error al actualizar tarea:", error);
+      return;
+    }
+
     setTareas(
-      tareas.map((tarea) =>
-        tarea.id === id ? { ...tarea, completada: !tarea.completada } : tarea
-      )
+      tareas.map((t) => (t.id === id ? { ...t, completada: !t.completada } : t))
     );
   }
 
-  function eliminarTarea(id: string) {
-    setTareas(tareas.filter((tarea) => tarea.id !== id));
+  async function eliminarTarea(id: string) {
+    const { error } = await supabase.from("tareas").delete().eq("id", id);
+
+    if (error) {
+      console.error("Error al eliminar tarea:", error);
+      return;
+    }
+
+    setTareas(tareas.filter((t) => t.id !== id));
   }
 
   const tareasFiltradas = tareas.filter((tarea) => {
@@ -148,37 +186,43 @@ function App() {
           ))}
         </div>
 
-        <ul className="flex flex-col gap-2">
-          {tareasFiltradas.map((tarea) => (
-            <li
-              key={tarea.id}
-              className="flex items-center gap-2.5 bg-white rounded-lg p-3 shadow-sm dark:bg-gray-800 dark:border dark:border-gray-700 dark:shadow-none"
-            >
-              <input
-                type="checkbox"
-                checked={tarea.completada}
-                onChange={() => toggleTarea(tarea.id)}
-              />
-              <span
-                className={
-                  tarea.completada
-                    ? "flex-1 line-through text-gray-400 dark:text-gray-500"
-                    : "flex-1"
-                }
-              >
-                {tarea.texto}
-              </span>
-              <button
-                onClick={() => eliminarTarea(tarea.id)}
-                className="border-none bg-transparent text-red-600 cursor-pointer text-lg leading-none"
-              >
-                ✕
-              </button>
-            </li>
-          ))}
-        </ul>
+        {cargando && (
+          <p className="text-center text-gray-400 mt-6">Cargando tareas...</p>
+        )}
 
-        {tareas.length === 0 && (
+        {!cargando && (
+          <ul className="flex flex-col gap-2">
+            {tareasFiltradas.map((tarea) => (
+              <li
+                key={tarea.id}
+                className="flex items-center gap-2.5 bg-white rounded-lg p-3 shadow-sm dark:bg-gray-800 dark:border dark:border-gray-700 dark:shadow-none"
+              >
+                <input
+                  type="checkbox"
+                  checked={tarea.completada}
+                  onChange={() => toggleTarea(tarea.id)}
+                />
+                <span
+                  className={
+                    tarea.completada
+                      ? "flex-1 line-through text-gray-400 dark:text-gray-500"
+                      : "flex-1"
+                  }
+                >
+                  {tarea.texto}
+                </span>
+                <button
+                  onClick={() => eliminarTarea(tarea.id)}
+                  className="border-none bg-transparent text-red-600 cursor-pointer text-lg leading-none"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {!cargando && tareas.length === 0 && (
           <p className="text-center text-gray-400 mt-6">
             No hay tareas todavía. ¡Agregá la primera!
           </p>
